@@ -40,7 +40,11 @@ export class ProductsService {
     }
   }
 
-  editProduct(product: DtoProducts) {
-    console.log(product);
+  async editProduct(sku: string, product: DtoProducts) {
+    const edicion = await this.productsModel.replaceOne(
+      { sku: Number(sku) },
+      product,
+    );
+    console.log(edicion);
   }
 }
