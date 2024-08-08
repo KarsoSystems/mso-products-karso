@@ -3,7 +3,6 @@ import { ProductsService } from './products.service';
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 
 @Controller('products')
-// @UseGuards(AuthGuard)
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
   @Get()

@@ -10,6 +10,10 @@ export class ProductsService {
     @InjectModel(Products.name) private productsModel: Model<Products>,
   ) {}
 
+  /**
+   * @createProduct Metodo para crear un producto nuevo
+   * @param product Recibe los parametros para crear un producto
+   */
   async createProduct(product: DtoProducts) {
     try {
       const newProduct = new this.productsModel(product);
@@ -20,6 +24,11 @@ export class ProductsService {
     }
   }
 
+  /**
+   * @getProducts Metodo que devuelve la lista de productos, y verifica los filtros.
+   * @param filter se envia un filtro para traer cierto tipo de productos.
+   * @returns retorna la lista de productos.
+   */
   getProducts(filter: string) {
     try {
       if (filter === 'visible') {
@@ -40,6 +49,11 @@ export class ProductsService {
     }
   }
 
+  /**
+   * @editProduct Metodo para editar las caracteristicas de un producto.
+   * @param sku Recibe el sku que se va a editar
+   * @param product Recibe los parametros nuevos del SKU.
+   */
   async editProduct(sku: string, product: DtoProducts) {
     const edicion = await this.productsModel.replaceOne(
       { sku: Number(sku) },
@@ -48,6 +62,11 @@ export class ProductsService {
     return edicion;
   }
 
+  /**
+   * @softDeleteProduct Metodo para desactivar/activer la disponibilidad de un producto
+   * @param sku Recibe el SKU que se va a desactivar/activar
+   * @param status Recibe el estatustrue/false para la visibilidad del producto
+   */
   async softDeleteProduct(sku: string, status: boolean) {
     const getProduct = await this.productsModel.find({ sku: sku });
     if (getProduct[0]) {
