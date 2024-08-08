@@ -18,7 +18,14 @@ export class ProductsController {
 
   @Put(':sku')
   putProduct(@Param('sku') sku: string, @Body() product: DtoProducts) {
-    this.productsService.editProduct(sku, product);
-    return 'editar';
+    return this.productsService.editProduct(sku, product);
+  }
+
+  @Put('status/:sku')
+  desactivateProduct(
+    @Param('sku') sku: string,
+    @Body() body: { status: boolean },
+  ) {
+    return this.productsService.softDeleteProduct(sku, body.status);
   }
 }

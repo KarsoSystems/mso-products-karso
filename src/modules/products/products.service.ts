@@ -45,6 +45,25 @@ export class ProductsService {
       { sku: Number(sku) },
       product,
     );
-    console.log(edicion);
+    return edicion;
+  }
+
+  async softDeleteProduct(sku: string, status: boolean) {
+    const getProduct = await this.productsModel.find({ sku: sku });
+    if (getProduct[0]) {
+      await this.productsModel.updateOne(
+        {
+          sku: Number(sku),
+        },
+        {
+          $set: {
+            disponible: status,
+          },
+        },
+      );
+      return `Se cambio el estatus del SKU ${sku}  a ${String(status)} `;
+    }
+
+    return 'algo salio mal';
   }
 }
