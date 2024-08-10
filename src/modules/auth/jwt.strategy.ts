@@ -12,8 +12,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validate(payload: any): Promise<any> {
-    console.log('SE EJECUTA??', payload);
     return { name: 'user' };
   }
 }

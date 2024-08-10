@@ -32,7 +32,7 @@ export class ProductsController {
   ) {
     try {
       const result = await this.productsService.getProducts(params.filter);
-      response.status(HttpStatus.OK).json({
+      return response.status(HttpStatus.OK).json({
         folio: folio(),
         mensaje: 'Operación exitosa',
         resultado: result,
@@ -48,8 +48,13 @@ export class ProductsController {
    */
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  postProducts(@Body() product: DtoProducts) {
-    return this.productsService.createProduct(product);
+  async postProducts(@Body() product: DtoProducts, @Res() response: Response) {
+    try {
+      const respuesta = await this.productsService.createProduct(product);
+      return response.status(HttpStatus.CREATED).json(respuesta);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -59,8 +64,20 @@ export class ProductsController {
    */
   @Put(':sku')
   @UseGuards(AuthGuard('jwt'))
-  putProduct(@Param('sku') sku: string, @Body() product: DtoProducts) {
-    return this.productsService.editProduct(sku, product);
+  async putProduct(
+    @Param('sku') sku: string,
+    @Body() product: DtoProducts,
+    @Res() response: Response,
+  ) {
+    try {
+      const respuestaEdicion = await this.productsService.editProduct(
+        sku,
+        product,
+      );
+      return response.status(HttpStatus.CREATED).json(respuestaEdicion);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -70,10 +87,19 @@ export class ProductsController {
    */
   @Put('status/:sku')
   @UseGuards(AuthGuard('jwt'))
-  desactivateProduct(
+  async desactivateProduct(
     @Param('sku') sku: string,
     @Body() body: { status: boolean },
+    @Res() response: Response,
   ) {
-    return this.productsService.softDeleteProduct(sku, body.status);
+    try {
+      const respuestaStatus = await this.productsService.softDeleteProduct(
+        sku,
+        body.status,
+      );
+      return response.status(HttpStatus.CREATED).json(respuestaStatus);
+    } catch (error) {
+      throw error;
+    }
   }
 }

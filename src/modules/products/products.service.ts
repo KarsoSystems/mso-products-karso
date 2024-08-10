@@ -1,8 +1,9 @@
 import { Model } from 'mongoose';
+import { folio } from 'src/utils/functions';
 import { Products } from './schemas/products.schema';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DtoProducts } from './dto/products-dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ProductsService {
@@ -18,9 +19,26 @@ export class ProductsService {
     try {
       const newProduct = new this.productsModel(product);
       await newProduct.save();
-      return newProduct;
+      return {
+        folio: folio(),
+        mensaje: 'Operación exitosa',
+        detalles: `El SKU ${product.sku} se creo correctamente.`,
+        resultado: null,
+      };
     } catch (error) {
-      return error.errorResponse.errmsg;
+      // return error.errorResponse.errmsg;
+      throw new HttpException(
+        {
+          folio: folio(),
+          mensaje: 'Ocurrio un error',
+          detalles: error.message,
+          resultado: null,
+        },
+        HttpStatus.BAD_GATEWAY,
+        {
+          cause: error,
+        },
+      );
     }
   }
 
@@ -43,16 +61,20 @@ export class ProductsService {
         return this.productsModel.find({ disponible: true, top: true });
       }
 
-      // return this.productsModel.find({});
+      return this.productsModel.find({});
+    } catch (error) {
       throw new HttpException(
-        { mensaje: 'este es un error' },
-        HttpStatus.CONFLICT,
         {
-          cause: 'quien sabe bro',
+          folio: folio(),
+          mensaje: 'Ocurrio un error',
+          detalles: error.message,
+          resultado: null,
+        },
+        HttpStatus.BAD_GATEWAY,
+        {
+          cause: error,
         },
       );
-    } catch (error) {
-      throw error;
     }
   }
 
@@ -62,11 +84,28 @@ export class ProductsService {
    * @param product Recibe los parametros nuevos del SKU.
    */
   async editProduct(sku: string, product: DtoProducts) {
-    const edicion = await this.productsModel.replaceOne(
-      { sku: Number(sku) },
-      product,
-    );
-    return edicion;
+    try {
+      await this.productsModel.replaceOne({ sku: Number(sku) }, product);
+      return {
+        folio: folio(),
+        mensaje: 'Operación exitosa',
+        detalles: `El SKU ${sku} de modificó correctamente.`,
+        resultado: null,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          folio: folio(),
+          mensaje: 'Ocurrio un error',
+          detalles: error.message,
+          resultado: null,
+        },
+        HttpStatus.BAD_GATEWAY,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 
   /**
@@ -75,21 +114,40 @@ export class ProductsService {
    * @param status Recibe el estatustrue/false para la visibilidad del producto
    */
   async softDeleteProduct(sku: string, status: boolean) {
-    const getProduct = await this.productsModel.find({ sku: sku });
-    if (getProduct[0]) {
-      await this.productsModel.updateOne(
-        {
-          sku: Number(sku),
-        },
-        {
-          $set: {
-            disponible: status,
+    try {
+      const getProduct = await this.productsModel.find({ sku: sku });
+      if (getProduct[0]) {
+        await this.productsModel.updateOne(
+          {
+            sku: Number(sku),
           },
+          {
+            $set: {
+              disponible: status,
+            },
+          },
+        );
+        return {
+          folio: folio(),
+          mensaje: 'Operación exitosa',
+          detalles: `El SKU ${sku} paso a estatus ${status}.`,
+          resultado: null,
+        };
+      }
+      throw new Error('El sku no existe');
+    } catch (error) {
+      throw new HttpException(
+        {
+          folio: folio(),
+          mensaje: 'Ocurrio un error',
+          detalles: error.message,
+          resultado: null,
+        },
+        HttpStatus.BAD_GATEWAY,
+        {
+          cause: error,
         },
       );
-      return `Se cambio el estatus del SKU ${sku}  a ${String(status)} `;
     }
-
-    return 'algo salio mal';
   }
 }
