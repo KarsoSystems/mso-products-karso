@@ -1,3 +1,5 @@
+import { folio } from 'src/utils/functions';
+import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { DtoProducts } from './dto/products-dto';
 import { ProductsService } from './products.service';
@@ -5,10 +7,12 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
   Put,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 
@@ -22,8 +26,20 @@ export class ProductsController {
    * @returns retorna la lista de productos.
    */
   @Get()
-  getAllProducts(@Query() params: { filter: string }) {
-    return this.productsService.getProducts(params.filter);
+  async getAllProducts(
+    @Query() params: { filter: string },
+    @Res() response: Response,
+  ) {
+    try {
+      const result = await this.productsService.getProducts(params.filter);
+      response.status(HttpStatus.OK).json({
+        folio: folio(),
+        mensaje: 'Operación exitosa',
+        resultado: result,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**

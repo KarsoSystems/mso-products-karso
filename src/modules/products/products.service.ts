@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
 import { Products } from './schemas/products.schema';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DtoProducts } from './dto/products-dto';
 
@@ -29,7 +29,7 @@ export class ProductsService {
    * @param filter se envia un filtro para traer cierto tipo de productos.
    * @returns retorna la lista de productos.
    */
-  getProducts(filter: string) {
+  async getProducts(filter: string) {
     try {
       if (filter === 'visible') {
         return this.productsModel.find({ disponible: true, visible: true });
@@ -43,9 +43,16 @@ export class ProductsService {
         return this.productsModel.find({ disponible: true, top: true });
       }
 
-      return this.productsModel.find({});
+      // return this.productsModel.find({});
+      throw new HttpException(
+        { mensaje: 'este es un error' },
+        HttpStatus.CONFLICT,
+        {
+          cause: 'quien sabe bro',
+        },
+      );
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 

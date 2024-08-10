@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from './modules/auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductsModule } from './modules/products/products.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -19,6 +20,7 @@ import configurationMongo from './configuration/configuration-mongo';
       inject: [ConfigService],
     }),
     ProductsModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
