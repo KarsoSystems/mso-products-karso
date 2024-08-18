@@ -4,9 +4,21 @@ import { Products } from './schemas/products.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { DtoProducts } from './dto/products-dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import * as AWS from 'aws-sdk';
 
 @Injectable()
 export class ProductsService {
+  // AWS_S3_BUCKET = 'demoimagesrepo';
+  // s3 = new AWS.S3({
+  //   accessKeyId: 'AKIAXYKJVQ37EISWICBK',
+  //   secretAccessKey: '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',
+  // });
+  AWS_S3_BUCKET = process.env.BUCKET_NAME;
+  s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+  });
+
   constructor(
     @InjectModel(Products.name) private productsModel: Model<Products>,
   ) {}
@@ -146,6 +158,55 @@ export class ProductsService {
         HttpStatus.BAD_GATEWAY,
         {
           cause: error,
+        },
+      );
+    }
+  }
+
+  /**
+   * @uploadFileS3 Funcion que almacena las imagenes en AWS
+   * @param file Recibe un archivo de imagen
+   */
+  async uploadFileS3(file) {
+    const { originalname } = file;
+    return await this.saveS3(
+      file.buffer,
+      this.AWS_S3_BUCKET,
+      originalname,
+      file.mimetype,
+    );
+  }
+
+  /**
+   * @saveS3 Funcion que alamcena directamente la imagen en un bucket de S3
+   */
+  async saveS3(file, bucket, name, mimetype) {
+    const params = {
+      Bucket: bucket,
+      Key: String(name),
+      Body: file,
+      ACL: 'public-read',
+      ContentType: mimetype,
+      ContentDisposition: 'inline',
+      CreateBucketConfiguration: {
+        LocationConstraint: 'us-east-2',
+      },
+    };
+
+    try {
+      const s3Response = await this.s3.upload(params).promise();
+      return s3Response;
+    } catch (e) {
+      throw new HttpException(
+        {
+          folio: folio(),
+          mensaje: 'Ocurrio un error',
+          detalles: e.message,
+          resultado: null,
+        },
+        HttpStatus.BAD_GATEWAY,
+        {
+          cause: e,
         },
       );
     }

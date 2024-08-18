@@ -1,8 +1,9 @@
 import { folio } from 'src/utils/functions';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
-import { DtoProducts } from './dto/products-dto';
 import { ProductsService } from './products.service';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { DtoProducts, DtoProductsRequest } from './dto/products-dto';
 import {
   Body,
   Controller,
@@ -13,7 +14,9 @@ import {
   Put,
   Query,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 
 @Controller('products')
@@ -42,20 +45,20 @@ export class ProductsController {
     }
   }
 
-  /**
-   * @postProducts Servicio para crear productos
-   * @param product Recibe los parametros para dar de alta un nuevo producto
-   */
-  @Post()
-  @UseGuards(AuthGuard('jwt'))
-  async postProducts(@Body() product: DtoProducts, @Res() response: Response) {
-    try {
-      const respuesta = await this.productsService.createProduct(product);
-      return response.status(HttpStatus.CREATED).json(respuesta);
-    } catch (error) {
-      throw error;
-    }
-  }
+  // /**
+  //  * @postProducts Servicio para crear productos
+  //  * @param product Recibe los parametros para dar de alta un nuevo producto
+  //  */
+  // @Post()
+  // @UseGuards(AuthGuard('jwt'))
+  // async postProducts(@Body() product: DtoProducts, @Res() response: Response) {
+  //   try {
+  //     const respuesta = await this.productsService.createProduct(product);
+  //     return response.status(HttpStatus.CREATED).json(respuesta);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   /**
    * @putProduct Servicio para editar los elementos de un producto
@@ -98,6 +101,31 @@ export class ProductsController {
         body.status,
       );
       return response.status(HttpStatus.CREATED).json(respuestaStatus);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'foto_principal', maxCount: 1 }]),
+  )
+  async newProduct(
+    @UploadedFiles() files: { foto_principal?: Express.Multer.File[] },
+    @Body() product: DtoProductsRequest,
+    @Res() response: Response,
+  ) {
+    try {
+      const result = await this.productsService.uploadFileS3(
+        files.foto_principal[0],
+      );
+      const respuesta = await this.productsService.createProduct({
+        ...product,
+        foto_principal: result.Location,
+        fotos: ['test.jpg'],
+      });
+      return response.status(HttpStatus.CREATED).json(respuesta);
     } catch (error) {
       throw error;
     }
