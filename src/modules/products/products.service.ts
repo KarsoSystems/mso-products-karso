@@ -15,8 +15,8 @@ export class ProductsService {
   // });
   AWS_S3_BUCKET = process.env.BUCKET_NAME;
   s3 = new AWS.S3({
-    accessKeyId: process.env.AWS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
+    accessKeyId: process.env.KEY_ID,
+    secretAccessKey: process.env.AWS_KEY,
   });
 
   constructor(
