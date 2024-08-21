@@ -16,8 +16,8 @@ import configurationMongo from './configuration/configuration-mongo';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         return {
-          // uri: `mongodb+srv://${configService.get('mongo.user')}:${configService.get('mongo.password')}@${configService.get('mongo.host')}/${configService.get('mongo.database')}?retryWrites=true&w=majority&appName=Cluster0`,
-          uri: `mongodb://localhost:27017/karsoDB`,
+          uri: `mongodb+srv://${configService.get('mongo.user')}:${configService.get('mongo.password')}@${configService.get('mongo.host')}/${configService.get('mongo.database')}?retryWrites=true&w=majority&appName=Cluster0`,
+          //uri: `mongodb://localhost:27017/karsoDB`,
         };
       },
       inject: [ConfigService],
